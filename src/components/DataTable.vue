@@ -148,6 +148,7 @@
                 />
                 <template v-else-if="column === 'expand'">
                   <i
+                    v-if="showExpandIcon(item, index)"
                     class="expand-icon"
                     :class="{'expanding': expandingItemIndexList.includes(prevPageEndIndex + index)}"
                   />

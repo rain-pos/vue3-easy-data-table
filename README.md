@@ -30,6 +30,21 @@ https://hc200ok.github.io/vue3-easy-data-table-doc/
 17. [Border cell](https://hc200ok.github.io/vue3-easy-data-table-doc/features/border-cell.html) (new feature since version `1.3.11`)
 18. [Class name customization](https://hc200ok.github.io/vue3-easy-data-table-doc/features/class-name-customization.html) (new feature since version `1.3.11`)
 
+## Custom Props
+**show-expand-icon** <br>
+Type: Function
+Default: () => true<br>
+**Description**:<br>
+A function that determines whether the expand icon should be shown for a given row item.
+<br>**Usage:**<br>
+Pass a function that receives the current item as a parameter and returns a boolean. If the function returns true, the expand icon will be displayed for that row.
+<br>**Example:**
+```vue
+<Vue3EasyDataTable
+    :show-expand-icon="(item: any) => item.type === 'instant'"
+/>
+```
+
 ## Getting started
 ### 1. ES module
 #### Install
