@@ -2,7 +2,7 @@ import { PropType } from 'vue';
 import type {
   SortType, Item, ServerOptions, FilterOption,
   HeaderItemClassNameFunction, BodyItemClassNameFunction, BodyRowClassNameFunction,
-  TextDirection,
+  TextDirection, ShowExpandIconFunction,
 } from './types/main';
 import type { ClickEventType } from './types/internal';
 
@@ -186,5 +186,9 @@ export default {
   clickRowToExpand: {
     type: Boolean,
     default: false,
+  },
+  showExpandIcon: {
+    type: Function as PropType<ShowExpandIconFunction>,
+    default: (item: Item, index: number) => true,
   },
 };
