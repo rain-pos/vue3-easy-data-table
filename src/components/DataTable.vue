@@ -131,7 +131,7 @@
                 :style="getFixedDistance(column, 'td')"
                 :class="[{
                   'shadow': column === lastFixedColumn,
-                  'can-expand': column === 'expand',
+                  'can-expand': (column === 'expand' && showExpandIcon(item, index)),
                 // eslint-disable-next-line max-len
                 }, typeof bodyItemClassName === 'string' ? bodyItemClassName : bodyItemClassName(column, i), `direction-${bodyTextDirection}`]"
                 @click="(column === 'expand' && showExpandIcon(item, index)) ? updateExpandingItemIndexList(index + prevPageEndIndex, item, $event) : null"
