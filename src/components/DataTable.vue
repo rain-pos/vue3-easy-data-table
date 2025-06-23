@@ -121,7 +121,7 @@
                        typeof bodyRowClassName === 'string' ? bodyRowClassName : bodyRowClassName(item, index)]"
               @click="($event) => {
                 clickRow(item, 'single');
-                clickRowToExpand && updateExpandingItemIndexList(index + prevPageEndIndex, item, $event);
+                showExpandIcon(item, index) && clickRowToExpand && updateExpandingItemIndexList(index + prevPageEndIndex, item, $event);
               }"
               @dblclick="clickRow(item, 'double')"
             >
@@ -134,7 +134,7 @@
                   'can-expand': column === 'expand',
                 // eslint-disable-next-line max-len
                 }, typeof bodyItemClassName === 'string' ? bodyItemClassName : bodyItemClassName(column, i), `direction-${bodyTextDirection}`]"
-                @click="column === 'expand' ? updateExpandingItemIndexList(index + prevPageEndIndex, item, $event) : null"
+                @click="(column === 'expand' && showExpandIcon(item, index)) ? updateExpandingItemIndexList(index + prevPageEndIndex, item, $event) : null"
               >
                 <slot
                   v-if="slots[`item-${column}`]"
