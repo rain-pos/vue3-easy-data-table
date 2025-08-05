@@ -191,4 +191,8 @@ export default {
     type: Function as PropType<ShowExpandIconFunction>,
     default: (item: Item, index: number) => true,
   },
+  useColumnMaxWidth: {
+    type: [Boolean, Number],
+    default: false,
+  },
 };

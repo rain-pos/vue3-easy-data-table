@@ -40,6 +40,7 @@
       header-text-direction="left"
       :filter-options="filterOptions"
       click-event-type="double"
+      :use-column-max-width="120"
       @update-sort="updateSort"
       @update-filter="updateFilter"
       @select-row="showItem"

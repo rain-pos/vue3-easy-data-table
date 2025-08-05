@@ -20,8 +20,9 @@
         <colgroup>
           <col
             v-for="(header, index) in headersForRender"
+            :ref="(el: any) => setHeaderRef(el, index)"
             :key="index"
-            :style="getColStyle(header)"
+            :style="getColStyle(header, index)"
           />
         </colgroup>
         <thead
@@ -273,9 +274,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  useSlots, computed, toRefs, ref, watch, provide, onMounted, PropType,
-} from 'vue';
+import {computed, nextTick, onMounted, PropType, provide, reactive, ref, toRefs, useSlots, watch,} from 'vue';
 
 import MultipleSelectCheckBox from './MultipleSelectCheckBox.vue';
 import SingleSelectCheckBox from './SingleSelectCheckBox.vue';
@@ -295,11 +294,11 @@ import useRows from '../hooks/useRows';
 import useServerOptions from '../hooks/useServerOptions';
 import useTotalItems from '../hooks/useTotalItems';
 
-import type { Header, Item } from '../types/main';
-import type { HeaderForRender } from '../types/internal';
+import type {Header, Item} from '../types/main';
+import type {HeaderForRender} from '../types/internal';
 
 // eslint-disable-next-line import/extensions
-import { generateColumnContent } from '../utils';
+import {generateColumnContent} from '../utils';
 import propsWithDefault from '../propsWithDefault';
 
 const props = defineProps({
@@ -313,6 +312,13 @@ const props = defineProps({
     required: true,
   },
 });
+
+const headerRefs: any = {};
+const columnWidths: any = reactive({});
+
+const setHeaderRef = (el: any, key: any) => {
+  if (el) headerRefs[key] = el;
+};
 
 const {
   clickEventType,
@@ -527,11 +533,30 @@ const {
 );
 
 // template style generation function
-const getColStyle = (header: HeaderForRender): string | undefined => {
-  const width = header.width ?? (fixedHeaders.value.length ? 100 : null);
-  if (width) return `width: ${width}px; min-width: ${width}px;`;
-  return undefined;
+const getColStyle = (header: HeaderForRender, index: any): string | undefined => {
+    const computedWidth = columnWidths[index];
+    const maxWidth = props.useColumnMaxWidth;
+
+    let width = header.width ?? (fixedHeaders.value.length ? 100 : computedWidth);
+
+    if (!width || (maxWidth && width > maxWidth)) {
+        width = maxWidth;
+    }
+
+    return width ? `width: ${width}px; min-width: ${width}px;` : '';
 };
+
+const measureColumns = () => {
+  // eslint-disable-next-line guard-for-in
+  for (const key in headerRefs) {
+    const el = headerRefs[key];
+    columnWidths[key] = el.getBoundingClientRect().width;
+  }
+};
+
+onMounted(() => {
+  nextTick(measureColumns);
+});
 
 const getFixedDistance = (column: string, type: 'td' | 'th' = 'th') => {
   if (!fixedHeaders.value.length) return undefined;

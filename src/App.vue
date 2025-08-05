@@ -1,9 +1,9 @@
 <template>
-  <!-- <ServerSideMode /> -->
+  <ServerSideMode />
   <br><br>
-  <ClientMode />
-  <br><br>
-  <!-- <ExpandLoading/> -->
+    <!--<ClientMode /> -->
+    <br><br>
+    <!-- <ExpandLoading/> -->
 </template>
 
 <script setup lang="ts">
