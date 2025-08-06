@@ -161,7 +161,9 @@
                   />
                 </template>
                 <template v-else>
-                  {{ generateColumnContent(column, item, headers) }}
+                  <div :style="computedDivContentStyle">
+                      {{ generateColumnContent(column, item, headers) }}
+                  </div>
                 </template>
               </td>
             </tr>
@@ -315,6 +317,12 @@ const props = defineProps({
 
 const headerRefs: any = {};
 const columnWidths: any = reactive({});
+const computedDivContentStyle = computed(() => {
+  if (props.useColumnMaxWidth) {
+    return `max-width: ${props.useColumnMaxWidth}px; word-break: break-word; overflow-wrap: break-word`;
+  }
+  return '';
+});
 
 const setHeaderRef = (el: any, key: any) => {
   if (el) headerRefs[key] = el;
