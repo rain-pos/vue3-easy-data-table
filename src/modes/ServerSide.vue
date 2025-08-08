@@ -22,6 +22,7 @@
       :table-height="300"
       :body-row-class-name="bodyRowClassName"
       table-class-name="hc-table"
+      :use-column-max-width="120"
       theme-color="#1d90ff"
       border-cell
       multi-sort
