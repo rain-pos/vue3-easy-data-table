@@ -16,7 +16,7 @@
         'border-cell': borderCell,
       }"
     >
-      <table>
+      <table :id="tableNodeId">
         <colgroup>
           <col
             v-for="(header, index) in headersForRender"
@@ -25,8 +25,12 @@
             :style="getColStyle(header, index)"
           />
         </colgroup>
+        <slot
+          v-if="slots['customize-headers']"
+          name="customize-headers"
+        />
         <thead
-          v-if="headersForRender.length && !hideHeader"
+          v-else-if="headersForRender.length && !hideHeader"
           class="vue3-easy-data-table__header"
           :class="[headerClassName]"
         >
@@ -41,7 +45,7 @@
                 'asc': header.sortable && header.sortType === 'asc',
                 'shadow': header.value === lastFixedColumn,
               // eslint-disable-next-line max-len
-              }, typeof headerItemClassName === 'string' ? headerItemClassName : headerItemClassName(header as Header, index)]"
+              }, typeof headerItemClassName === 'string' ? headerItemClassName : headerItemClassName(header as Header, index + 1)]"
               :style="getFixedDistance(header.value)"
               @click.stop="(header.sortable && header.sortType) ? updateSortField(header.value, header.sortType) : null"
             >
@@ -66,6 +70,11 @@
                   :name="`header-${header.value.toLowerCase()}`"
                   v-bind="header"
                 />
+                <slot
+                  v-else-if="slots['header']"
+                  name="header"
+                  v-bind="header"
+                />   
                 <span
                   v-else
                   class="header-text"
@@ -119,12 +128,13 @@
           >
             <tr
               :class="[{'even-row': (index + 1) % 2 === 0},
-                       typeof bodyRowClassName === 'string' ? bodyRowClassName : bodyRowClassName(item, index)]"
+                       typeof bodyRowClassName === 'string' ? bodyRowClassName : bodyRowClassName(item, index + 1)]"
               @click="($event) => {
-                clickRow(item, 'single');
+                clickRow(item, 'single', $event);
                 showExpandIcon(item, index) && clickRowToExpand && updateExpandingItemIndexList(index + prevPageEndIndex, item, $event);
               }"
-              @dblclick="clickRow(item, 'double')"
+              @dblclick="($event) => {clickRow(item, 'double', $event)}"
+              @contextmenu="($event) => {contextMenuRow(item, $event)}"
             >
               <td
                 v-for="(column, i) in headerColumns"
@@ -134,7 +144,7 @@
                   'shadow': column === lastFixedColumn,
                   'can-expand': (column === 'expand' && showExpandIcon(item, index)),
                 // eslint-disable-next-line max-len
-                }, typeof bodyItemClassName === 'string' ? bodyItemClassName : bodyItemClassName(column, i), `direction-${bodyTextDirection}`]"
+                }, typeof bodyItemClassName === 'string' ? bodyItemClassName : bodyItemClassName(column, index + 1), `direction-${bodyTextDirection}`]"
                 @click="(column === 'expand' && showExpandIcon(item, index)) ? updateExpandingItemIndexList(index + prevPageEndIndex, item, $event) : null"
               >
                 <slot
@@ -160,6 +170,11 @@
                     @change="toggleSelectItem(item)"
                   />
                 </template>
+                <slot
+                  v-else-if="slots['item']"
+                  name="item"
+                  v-bind="{column, item}"
+                />
                 <template v-else>
                   <div :style="computedDivContentStyle">
                       {{ generateColumnContent(column, item, headers) }}
@@ -170,7 +185,7 @@
             <template
               v-if="ifHasExpandSlot && expandingItemIndexList.includes(index + prevPageEndIndex)"
               :class="[{'even-row': (index + 1) % 2 === 0},
-                       typeof bodyExpandRowClassName === 'string' ? bodyExpandRowClassName : bodyExpandRowClassName(item, index)]"
+                       typeof bodyExpandRowClassName === 'string' ? bodyExpandRowClassName : bodyExpandRowClassName(item, index + 1)]"
             >
             <LoadingLine
                 v-if="item.expandLoading"
@@ -220,7 +235,9 @@
         v-if="!pageItems.length && !loading"
         class="vue3-easy-data-table__message"
       >
-        {{ emptyMessage }}
+        <slot name="empty-message">
+          {{ emptyMessage }}
+        </slot>
       </div>
     </div>
     <div
@@ -329,6 +346,7 @@ const setHeaderRef = (el: any, key: any) => {
 };
 
 const {
+  tableNodeId,
   clickEventType,
   bodyTextDirection,
   checkboxColumnWidth,
@@ -360,6 +378,8 @@ const {
   tableMinHeight,
   themeColor,
   rowsOfPageSeparatorMessage,
+  showIndexSymbol,
+  preventContextMenuRow
 } = toRefs(props);
 
 // style related computed variables
@@ -391,6 +411,7 @@ onMounted(() => {
 
 const emits = defineEmits([
   'clickRow',
+  'contextmenuRow',
   'selectRow',
   'deselectRow',
   'expandRow',
@@ -398,6 +419,9 @@ const emits = defineEmits([
   'updateFilter',
   'update:itemsSelected',
   'update:serverOptions',
+  'updatePageItems',
+  'updateTotalItems',
+  'selectAll'
 ]);
 
 const isMultipleSelectable = computed((): boolean => itemsSelected.value !== null);
@@ -422,6 +446,7 @@ const {
   isMultiSorting,
   getMultiSortNumber,
 } = useHeaders(
+  showIndexSymbol,
   checkboxColumnWidth,
   expandColumnWidth,
   fixedCheckbox,
@@ -540,6 +565,11 @@ const {
   emits,
 );
 
+const contextMenuRow = (item: Item, $event: MouseEvent) => {
+  if (preventContextMenuRow.value) $event.preventDefault();
+  emits('contextmenuRow', item, $event);
+}
+
 // template style generation function
 const getColStyle = (header: HeaderForRender, index: any): string | undefined => {
     const computedWidth = columnWidths[index];
@@ -603,6 +633,15 @@ watch([currentPaginationNumber, clientSortOptions, searchField, searchValue, fil
   clearExpandingItemIndexList();
 }, { deep: true });
 
+watch(pageItems, (value) => {
+  emits('updatePageItems', value);
+}, { deep: true });
+
+watch(totalItems, (value) => {
+  emits('updateTotalItems', value);
+}, { deep: true });
+
+
 defineExpose({
   currentPageFirstIndex,
   currentPageLastIndex,
@@ -618,6 +657,7 @@ defineExpose({
   rowsPerPageActiveOption: rowsPerPageRef,
   updateRowsPerPageActiveOption: updateRowsPerPage,
 });
+
 </script>
 
 <style>
@@ -655,6 +695,7 @@ defineExpose({
     /**footer-rowsPerPage**/
     --easy-table-rows-per-page-selector-width: auto;
     --easy-table-rows-per-page-selector-option-padding: 5px;
+    --easy-table-rows-per-page-selector-z-index: auto;
     /*message*/
     --easy-table-message-font-color: #212121;
     --easy-table-message-font-size: 12px;
