@@ -81,7 +81,7 @@ export default {
   },
   loading: {
     type: Boolean,
-    deault: false,
+    default: false,
   },
   rowsPerPage: {
     type: Number,
@@ -195,4 +195,16 @@ export default {
     type: [Boolean, Number],
     default: false,
   },
+  tableNodeId: {
+    type: String,
+    default: '',
+  },
+  showIndexSymbol: {
+    type: String,
+    default: '#',
+  },
+  preventContextMenuRow: {
+    type: Boolean,
+    default: true
+  }
 };
