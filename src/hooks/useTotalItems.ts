@@ -64,6 +64,8 @@ export default function useTotalItems(
               return itemValue >= criteria;
             case 'between':
               return itemValue >= Math.min(...criteria) && itemValue <= Math.max(...criteria);
+            case 'in':
+              return criteria.includes(itemValue);
             default:
               return itemValue === criteria;
           }
@@ -135,6 +137,7 @@ export default function useTotalItems(
 
   const toggleSelectAll = (isChecked: boolean): void => {
     selectItemsComputed.value = isChecked ? totalItems.value : [];
+    if (isChecked) emits('selectAll');
   };
 
   const toggleSelectItem = (item: Item):void => {
