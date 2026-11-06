@@ -14,6 +14,7 @@
   <div>
     <DataTable
       ref="dataTable"
+      table-node-id="my-table"
       v-model:items-selected="itemsSelected"
       click-row-to-expand
       alternating
@@ -38,14 +39,35 @@
       multi-sort
       body-text-direction="left"
       header-text-direction="left"
-      :filter-options="filterOptions"
       click-event-type="double"
       :use-column-max-width="120"
       @update-sort="updateSort"
       @update-filter="updateFilter"
       @select-row="showItem"
       @deselect-row="deselectRow"
+      @update-page-items="updateItems"
+      @update-total-items="updateTotalItems"
+      show-index-symbol="$"
     >
+     <!-- <template #customize-headers>
+        <thead class="my-static-header">
+          <tr>
+            <th colspan="3" rowspan="2"></th>
+            <th colspan="4">member info</th>
+            <th colspan="4">indicator</th>
+          </tr>
+          <tr>
+            <th>name</th>
+            <th>team</th>
+            <th>number</th>
+            <th>position</th>
+            <th>height</th>
+            <th>weight</th>
+            <th>lastAttended</th>
+            <th>country</th>
+          </tr>
+        </thead>
+      </template> -->
       <template #expand="item">
         <tr v-for="(child, index) in item.children" :key="index">
           <td></td>
@@ -80,7 +102,13 @@
         </div>
       </template>
 
-      <template #item-lastAttended="item">
+      <!-- <template #item="{column, item}">
+        <div style="padding: 15px">
+          column: {{ column }} item: {{ item }}
+        </div>
+      </template> -->
+
+      <!-- <template #item-lastAttended="item">
         <div style="padding: 15px">
           {{ item.lastAttended }} camelCase
         </div>
@@ -94,14 +122,14 @@
 
       <template #body.append>
         <span>body.append</span>
-      </template>
+      </template> -->
     </DataTable>
   </div>
 </template>
 
 <script lang="ts" setup>
 import {
-  computed, ref, reactive, toRefs,
+  computed, ref, reactive, toRefs, onMounted
 } from 'vue';
 // import { useRowsPerPage } from 'use-vue3-easy-data-table';
 // import type { UseRowsPerPageReturn } from 'use-vue3-easy-data-table';
@@ -114,7 +142,7 @@ import {
   mockClientNestedItems, mockClientItems, mockDuplicateClientNestedItems, headersMocked,
 } from '../mock';
 
-const searchField = ref('indicator.weight');
+const searchField = ref('name');
 const searchValue = ref('');
 const sortBy = ref(['indicator.weight', 'number']);
 const sortType = ref<SortType | SortType[] | undefined>(['desc', 'asc']);
@@ -142,6 +170,16 @@ const headers: Header[] = [
 
 const updateFilter = (items: Item[]) => {
   console.log('filter items');
+  console.log(JSON.stringify(items));
+};
+
+const updateItems = (items: Item[]) => {
+  console.log('page items');
+  console.log(JSON.stringify(items));
+};
+
+const updateTotalItems = (items: Item[]) => {
+  console.log('total items');
   console.log(JSON.stringify(items));
 };
 
@@ -217,22 +255,21 @@ const favouriteSportCriteria = ref('all');
 const showNameFilter = ref(false);
 const nameCriteria = ref('');
 
-const filterOptions = computed((): FilterOption[] => {
-  const filterOptionsArray: FilterOption[] = [];
-  filterOptionsArray.push({
-    field: 'name',
-    criteria: nameCriteria.value,
-    comparison: (value, criteria): boolean => (value != null
-            && value.includes(criteria)),
-  });
-  return filterOptionsArray;
-});
+// const filterOptions = computed((): FilterOption[] => {
+//   const filterOptionsArray: FilterOption[] = [];
+//   filterOptionsArray.push({
+//     field: 'name',
+//     criteria: ['name-1', 'name-2'],
+//     comparison: 'in',
+//   });
+//   return filterOptionsArray;
+// });
 
 const bodyRowClassNameFunction: BodyRowClassNameFunction = (item: Item, index: number): string => (index === 0 ? 'first-row test-row' : '');
 const bodyExpandRowClassNameFunction: BodyRowClassNameFunction = (item: Item, index: number): string => 'expand-row';
 
 const headerItemClassNameFunction: HeaderItemClassNameFunction = (header: Header, index: number): string => (header.value === 'name' ? 'name-header' : '');
-const bodyItemClassNameFunction: BodyItemClassNameFunction = (column: string, index: number): string => (column === 'name' ? 'name-item' : '');
+const bodyItemClassNameFunction: BodyItemClassNameFunction = (column: string, index: number): string => ((column === 'name' && index === 1) ? 'colume_name-index_1' : '');
 // $ref dataTable
 const dataTable = ref();
 
@@ -277,6 +314,7 @@ const updateRowsPerPageSelect = (e: Event) => {
 // const updateRowsPerPageSelect = (e: Event) => {
 //   updateRowsPerPageActiveOption(Number((e.target as HTMLInputElement).value));
 // };
+
 </script>
 
 <style scoped>
@@ -356,6 +394,12 @@ const updateRowsPerPageSelect = (e: Event) => {
     --easy-table-scrollbar-thumb-color: #2d3a4f;
 
     --easy-table-loading-mask-background-color: #2d3a4f;
+}
+
+.my-static-header th {
+  color: white;
+  border-right: 1px solid #445269;
+  border-bottom: 1px solid #445269;
 }
 
 </style>
