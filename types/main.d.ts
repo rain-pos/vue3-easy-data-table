@@ -1,6 +1,6 @@
 export type SortType = 'asc' | 'desc'
 
-export type FilterComparison = '=' | '!=' | '>' | '>=' | '<' | '<=' | 'between';
+export type FilterComparison = '=' | '!=' | '>' | '>=' | '<' | '<=' | 'between'| 'in';
 
 export type Item = Record<string, any>
 
@@ -16,6 +16,10 @@ export type FilterOption = {
   field: string
   comparison: '>' | '>=' | '<' | '<='
   criteria: number
+} | {
+  field: number | string
+  comparison: 'in'
+  criteria: number[] | string[]
 } | {
   field: string
   comparison: (value: any, criteria: string) => boolean
@@ -47,8 +51,8 @@ export type UpdateSortArgument = {
   sortBy: string
 }
 
-export type HeaderItemClassNameFunction = (header: Header, index: number) => string
-export type BodyRowClassNameFunction = (item: Item, index: number) => string
-export type BodyItemClassNameFunction = (column: string, index: number) => string
+export type HeaderItemClassNameFunction = (header: Header, columnNumber: number) => string
+export type BodyRowClassNameFunction = (item: Item, rowNumber: number) => string
+export type BodyItemClassNameFunction = (column: string, rowNumber: number) => string
 
 export type TextDirection = 'center' | 'left' | 'right'
